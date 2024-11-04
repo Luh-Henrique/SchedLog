@@ -3,10 +3,10 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 </script>
 
 <template>
-    <AppLayout title="Dashboard">
+    <AppLayout title="Index Transportadoras">
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Dashboard
+                Index Transportadoras
             </h2>
         </template>
 
@@ -46,7 +46,7 @@ import AppLayout from '@/Layouts/AppLayout.vue';
                                         <h2 class="text-xl">Criar agendamento</h2>
                                         <form @submit.prevent="createBooking">
                                             <div class="mb-4">
-                                                <label class="block text-sm">Selecionar Estágio</label>
+                                                <label class="block text-sm">Data/Horário</label>
                                                 <select v-model="newBooking.stage_id" class="border rounded p-2 w-full">
                                                     <option v-for="stage in stages" :key="stage.id" :value="stage.id">{{
                                                         stage.nome }}</option>

@@ -21,4 +21,8 @@ Route::middleware([
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
+
+    Route::group(['prefix' => 'booking', 'as' => 'booking.'], function () {
+        Route::get('index', [BookingController::class, 'nextStep'])->name('index');
+    });
 });
