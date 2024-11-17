@@ -9,10 +9,12 @@ class Stage extends Model
 {
     use HasFactory;
 
+    const CANCELED = 99;
+
     protected $fillable = [
         'id',
         'desc',
         'code',
         'position'
-    ]
+    ];
 }

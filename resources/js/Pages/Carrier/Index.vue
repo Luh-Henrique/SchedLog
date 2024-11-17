@@ -1,122 +1,204 @@
 <script setup>
+import Modal from '@/Components/Modal.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import InputError from '@/Components/InputError.vue';
+import InputLabel from '@/Components/InputLabel.vue';
+import TextInput from '@/Components/TextInput.vue';
+import axios from 'axios';
 </script>
 
 <template>
-    <AppLayout title="Index Transportadoras">
-        <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Index Transportadoras
-            </h2>
-        </template>
-
+    <AppLayout title="Transportadoras">
+    <div>
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
-                    <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg h-screen flex flex-col">
-                        <div class="container mx-auto p-4 flex-grow flex flex-col relative">
-                            <h1 class="text-2xl font-bold mb-4">Agendamentos</h1>
+                <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-4">
+                    <h1 class="text-2xl font-bold mb-4">Transportadoras</h1>
 
-                            <!-- Create Booking Button -->
-                            <button class="absolute top-4 right-4 bg-blue-500 text-white px-4 py-2 rounded z-10"
-                                @click="showCreateModal">
-                                Criar agendamento
-                            </button>
+                    <!-- Create Button -->
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded mb-4" @click="showCreateModal">
+                        Criar Entrada
+                    </button>
 
-                            <div class="flex flex-row justify-between flex-grow">
-                                <div class="containerStage content min-w-[20%] max-w-[20%] mx-1 px-1 bg-gray-100 rounded overflow-auto hover-overflow flex flex-col"
-                                    v-for="stage in stages" :key="stage.id">
-                                    <div class="text-center my-2 font-semibold">{{ stage.nome }} ({{ bookings.filter(b => b.stage_id === stage.id).length }})</div>
-                                    <div class="flex-grow">
-                                        <div v-for="booking in bookings.filter(b => b.stage_id === stage.id)"
-                                            :key="booking.id" class="border p-2 mb-2 rounded bg-white shadow">
-                                            <p>{{ booking.nome }}</p>
-                                            <button @click="openModal(booking)" class="text-blue-500">Avançar</button>
-                                        </div>
-                                        <p v-if="!bookings.filter(b => b.stage_id === stage.id).length"
-                                            class="text-gray-500 text-center">Nenhum agendamento</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Create Booking Modal -->
-                            <Modal :show="createModalVisible" @close="closeCreateModal">
-                                <template v-slot>
-                                    <div class="box p-4">
-                                        <h2 class="text-xl">Criar agendamento</h2>
-                                        <form @submit.prevent="createBooking">
-                                            <div class="mb-4">
-                                                <label class="block text-sm">Data/Horário</label>
-                                                <select v-model="newBooking.stage_id" class="border rounded p-2 w-full">
-                                                    <option v-for="stage in stages" :key="stage.id" :value="stage.id">{{
-                                                        stage.nome }}</option>
-                                                </select>
-                                            </div>
-                                            <div class="mb-4">
-                                                <label class="block text-sm">Nome</label>
-                                                <input v-model="newBooking.nome" type="text"
-                                                    class="border rounded p-2 w-full" required />
-                                            </div>
-                                            <div class="flex justify-end">
-                                                <button type="button" @click="closeCreateModal"
-                                                    class="mr-2 text-gray-500">Cancelar</button>
-                                                <button type="submit"
-                                                    class="bg-blue-500 text-white px-4 py-2 rounded">Criar</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </template>
-                            </Modal>
-
-                            <!-- Advance Booking Modal -->
-                            <Modal :show="advanceModalVisible" @close="closeAdvanceModal">
-                                <template v-slot>
-                                    <div class="box p-4">
-                                        <h2 class="text-xl">Confirmar Avanço</h2>
-                                        <p>Você tem certeza que deseja avançar este agendamento?</p>
-                                        <div class="flex justify-end">
-                                            <button type="button" @click="closeAdvanceModal"
-                                                class="mr-2 text-gray-500">Cancelar</button>
-                                            <button @click="advanceBooking"
-                                                class="bg-blue-500 text-white px-4 py-2 rounded">Confirmar</button>
-                                        </div>
-                                    </div>
-                                </template>
-                            </Modal>
-                        </div>
-                    </div>
+                    <!-- Table -->
+                    <table class="min-w-full bg-white">
+                        <thead>
+                            <tr class="w-full bg-gray-200 text-left">
+                                <th class="py-2 px-4">Nome</th>
+                                <th class="py-2 px-4">CNPJ</th>
+                                <th class="py-2 px-4">CEP</th>
+                                <th class="py-2 px-4">Endereço</th>
+                                <th class="py-2 px-4">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="item in carriersData" :key="item.id" class="border-b">
+                                <td class="py-2 px-4">{{ item.name }}</td>
+                                <td class="py-2 px-4">{{ item.cnpj }}</td>
+                                <td class="py-2 px-4">{{ item.cep }}</td>
+                                <td class="py-2 px-4">{{ item.address }}</td>
+                                <td class="py-2 px-4">
+                                    <button @click="openEditModal(item)" class="text-blue-500 mr-2">Editar</button>
+                                    <button @click="deleteEntry(item.id)" class="text-red-500">Excluir</button>
+                                </td>
+                            </tr>
+                            <tr v-if="!tableData.length">
+                                <td colspan="5" class="py-4 text-center text-gray-500">Nenhum dado disponível</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-    </AppLayout>
+
+        <!-- Create Modal -->
+        <Modal :show="createModalVisible" @close="closeCreateModal">
+            <template v-slot>
+                <div class="box p-4">
+                    <h2 class="text-xl">Criar Entrada</h2>
+                    <form @submit.prevent="createEntry">
+                        <div class="mb-4">
+                            <InputLabel for="name" value="Nome" />
+                            <TextInput
+                                id="name"
+                                v-model="newEntry.name"
+                                type="text"
+                                class="mt-1 block w-full"
+                                required
+                                autofocus
+                            />
+                            <InputError v-if="errors?.name" :message="errors.name[0]" class="mt-2" />
+                        </div>
+                        <div class="mb-4">
+                            <InputLabel for="cnpj" value="CNPJ" />
+                            <TextInput
+                                id="cnpj"
+                                v-model="newEntry.cnpj"
+                                type="text"
+                                v-mask="'##.###.###/####-##'"
+                                class="mt-1 block w-full"
+                                required
+                            />
+                            <InputError v-if="errors?.cnpj" :message="errors.cnpj[0]" class="mt-2" />
+                        </div>
+                        <div class="mb-4">
+                            <InputLabel for="cep" value="CEP" />
+                            <TextInput
+                                id="cep"
+                                v-model="newEntry.cep"
+                                type="text"
+                                v-mask="'#####-###'"
+                                class="mt-1 block w-full"
+                                required
+                            />
+                            <InputError v-if="errors?.cep" :message="errors.cep[0]" class="mt-2" />
+                        </div>
+                        <div class="mb-4">
+                            <InputLabel for="address" value="Endereço" />
+                            <TextInput
+                                id="address"
+                                v-model="newEntry.address"
+                                type="text"
+                                class="mt-1 block w-full"
+                                required
+                            />
+                            <InputError v-if="errors?.address" :message="errors.address[0]" class="mt-2" />
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="button" @click="closeCreateModal" class="mr-2 text-gray-500">Cancelar</button>
+                            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Salvar</button>
+                        </div>
+                    </form>
+                </div>
+            </template>
+        </Modal>
+
+
+        <!-- Edit Modal -->
+        <Modal :show="editModalVisible" @close="closeEditModal">
+            <template v-slot>
+                <div class="box p-4">
+                    <h2 class="text-xl">Editar Entrada</h2>
+                    <form @submit.prevent="updateEntry">
+                        <div class="mb-4">
+                            <InputLabel for="name" value="Nome" />
+                            <TextInput
+                                id="name"
+                                v-model="selectedEntry.name"
+                                type="text"
+                                class="mt-1 block w-full"
+                                required
+                                autofocus
+                            />
+                            <InputError v-if="errors?.name" :message="errors.name[0]" class="mt-2" />
+                        </div>
+                        <div class="mb-4">
+                            <InputLabel for="cnpj" value="CNPJ" />
+                            <TextInput
+                                id="cnpj"
+                                v-model="selectedEntry.cnpj"
+                                type="text"
+                                v-mask="'##.###.###/####-##'"
+                                class="mt-1 block w-full"
+                                required
+                            />
+                            <InputError v-if="errors?.cnpj" :message="errors.cnpj[0]" class="mt-2" />
+                        </div>
+                        <div class="mb-4">
+                            <InputLabel for="cep" value="CEP" />
+                            <TextInput
+                                id="cep"
+                                v-model="selectedEntry.cep"
+                                type="text"
+                                v-mask="'#####-###'"
+                                class="mt-1 block w-full"
+                                required
+                            />
+                            <InputError v-if="errors?.cep" :message="errors.cep[0]" class="mt-2" />
+                        </div>
+                        <div class="mb-4">
+                            <InputLabel for="address" value="Endereço" />
+                            <TextInput
+                                id="address"
+                                v-model="selectedEntry.address"
+                                type="text"
+                                class="mt-1 block w-full"
+                                required
+                            />
+                            <InputError v-if="errors?.address" :message="errors.address[0]" class="mt-2" />
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="button" @click="closeEditModal" class="mr-2 text-gray-500">Cancelar</button>
+                            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Atualizar</button>
+                        </div>
+                    </form>
+                </div>
+            </template>
+        </Modal>
+
+    </div>
+</AppLayout>
 </template>
 
 <script>
-import Modal from '@/Components/Modal.vue'; // Import your modal component
-
 export default {
+    props:{
+        carriers: Array,
+    },
     components: { Modal },
     data() {
         return {
             createModalVisible: false,
-            advanceModalVisible: false,
-            newBooking: {
-                nome: '',
-                stage_id: null,
-            },
-            selectedBooking: null,
-            bookings: [], // Placeholder for booking data
-            stages: [
-                { id: 1, nome: 'Agendado' },
-                { id: 2, nome: 'Check-in' },
-                { id: 3, nome: 'Entrou na Planta' },
-                { id: 4, nome: 'Em Operação' },
-                { id: 5, nome: 'Finalizou Operação' },
-                { id: 6, nome: 'Saiu da Planta' },
-                { id: 7, nome: 'Faltou' },
-                { id: 8, nome: 'Cancelado' },
-            ],
+            carriersData: [],
+            editModalVisible: false,
+            newEntry: { name: '', cnpj: '', cep: '', address: '' },
+            selectedEntry: null,
+            tableData: [],
+            errors: {}
         };
+    },
+    mounted(){
+        this.carriersData = this.carriers;
     },
     methods: {
         showCreateModal() {
@@ -124,25 +206,52 @@ export default {
         },
         closeCreateModal() {
             this.createModalVisible = false;
-            this.newBooking = { nome: '', stage_id: null };
+            this.newEntry = { name: '', cnpj: '', cep: '', address: '' };
         },
-        createBooking() {
-            this.bookings.push({ ...this.newBooking, id: Date.now() }); // Mock ID generation
-            this.closeCreateModal();
+        createEntry() {
+            axios.post(route('carrier.store'), this.newEntry)
+            .then(response => {
+                this.carriersData = response.data;
+                this.closeCreateModal();
+            })
+            .catch(error => {
+                this.errors = error.response.data.errors;
+                console.log(this.errors);
+            })
+            // this.tableData.push({ ...this.newEntry, id: Date.now() });
+
         },
-        openModal(booking) {
-            this.selectedBooking = booking;
-            this.advanceModalVisible = true;
+        openEditModal(entry) {
+            this.selectedEntry = { ...entry };
+            this.editModalVisible = true;
         },
-        closeAdvanceModal() {
-            this.advanceModalVisible = false;
-            this.selectedBooking = null;
+        closeEditModal() {
+            this.editModalVisible = false;
+            this.selectedEntry = null;
         },
-        advanceBooking() {
-            if (this.selectedBooking) {
-                this.selectedBooking.stage_id += 1; // Move to the next stage
-                this.closeAdvanceModal();
-            }
+        updateEntry() {
+            axios.post(route('carrier.store'), this.selectedEntry)
+            .then(response => {
+                this.carriersData = response.data;
+            })
+            .catch(error => {
+                console.log(error);
+            })
+            // const index = this.tableData.findIndex(e => e.id === this.selectedEntry.id);
+            // if (index !== -1) {
+            //     this.tableData.splice(index, 1, { ...this.selectedEntry });
+            // }
+            this.closeEditModal();
+        },
+        deleteEntry(id) {
+            axios.delete(route('carrier.destroy', id))
+            .then(response => {
+                this.carriersData = response.data;
+            })
+            .catch(error => {
+                console.log(error);
+            })
+            // this.tableData = this.tableData.filter(e => e.id !== id);
         },
     },
 };
