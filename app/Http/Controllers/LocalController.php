@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Local;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
 
 class LocalController extends Controller
 {
@@ -12,7 +15,11 @@ class LocalController extends Controller
      */
     public function index()
     {
-        //
+        $locals = Local::get();
+
+        return Inertia::render('Local/Index', [
+            'locals' => $locals
+        ]);
     }
 
     /**
@@ -28,7 +35,38 @@ class LocalController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'cep' => 'required|string|regex:/^\d{5}-\d{3}$/',
+            'address' => 'required|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $requestAll = $request->all();
+
+        $requestAll['id'] = $request->get('id', null);
+
+        Local::updateOrCreate(
+            [
+                'id' => $requestAll['id']
+            ],
+            [
+                'name' => $requestAll['name'],
+                'user_id' => Auth::id(),
+                'cep' => $requestAll['cep'],
+                'address' => $requestAll['address'],
+            ]
+        );
+
+        $locals = Local::get();
+
+        return response()->json($locals, 200);
     }
 
     /**
@@ -60,6 +98,10 @@ class LocalController extends Controller
      */
     public function destroy(Local $local)
     {
-        //
+        $local->delete();
+
+        $locals = Local::get();
+
+        return response()->json($locals, 200);
     }
 }

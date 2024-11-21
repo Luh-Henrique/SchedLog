@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\Stage;
+use App\Models\Vehicle;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class BookingController extends Controller
@@ -30,12 +32,13 @@ class BookingController extends Controller
      */
     public function store(Request $request)
     {
+
         $validator = Validator::make($request->all(), [
-            'vehicle_id' => 'exists:vehicles',
-            'carrier_id'=> 'exists:carriers',
-            'user_id'=> 'exists:users',
-            'stage_id'=> 'exists:stages',
-            'parking_space_id' => 'exists:parking_spaces'
+            'vehicle_id' => 'exists:vehicles,id',
+            'placa' => 'required|regex:/^[A-Z]{3}\d{1}[A-Z\d]{1}\d{2}$/',
+            'carrier_id'=> 'exists:carriers,id',
+            'user_id'=> 'exists:users,id',
+            'parking_space_id' => 'exists:parking_spaces,id'
         ]);
 
         if ($validator->fails()) {
@@ -44,6 +47,38 @@ class BookingController extends Controller
                 'errors' => $validator->errors(),
             ], 422);
         }
+
+        $requestAll = $request->all();
+
+        $requestAll['id'] = $request->get('id', null);
+
+        $vehicle = Vehicle::updateOrCreate(
+            [
+                'placa' => $requestAll['placa']
+            ],
+            [
+                'vehicle_type_id' => $requestAll['vehicle_type_id'],
+                'driver_id' => $requestAll['driver_id'],
+            ]
+        );
+
+        Booking::updateOrCreate(
+            [
+                'id' => $requestAll['id']
+            ],
+            [
+                'booking_dt' => $requestAll['booking_dt'],
+                'vehicle_id' => $vehicle->id,
+                'carrier_id' => $requestAll['carrier_id'],
+                'user_id' => Auth::id(),
+                'stage_id' => Stage::where('position', 0)->first()->id,
+                'parking_space_id' => $requestAll['parking_space_id'],
+            ]
+        );
+
+        $bookings = Booking::get();
+
+        return response()->json($bookings, 200);
     }
 
     /**

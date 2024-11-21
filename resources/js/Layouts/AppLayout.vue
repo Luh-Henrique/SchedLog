@@ -51,12 +51,22 @@ const logout = () => {
                                 <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
                                     Dashboard
                                 </NavLink>
+                                <NavLink :href="route('local.index')" :active="route().current('local.index')">
+                                    Local
+                                </NavLink>
+                                <NavLink :href="route('driver.index')" :active="route().current('driver.index')">
+                                    Motorista
+                                </NavLink>
+                                <NavLink :href="route('vehicleType.index')" :active="route().current('vehicleType.index')">
+                                    Tipo de Veículo
+                                </NavLink>
                                 <NavLink :href="route('carrier.index')" :active="route().current('carrier.index')">
                                     Transportadoras
                                 </NavLink>
-                                <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
-                                    Tipo de Veículo
+                                <NavLink :href="route('parkingSpace.index')" :active="route().current('parkingSpace.index')">
+                                    Vagas
                                 </NavLink>
+
                             </div>
                         </div>
 

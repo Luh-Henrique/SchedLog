@@ -8,12 +8,12 @@ import axios from 'axios';
 </script>
 
 <template>
-    <AppLayout title="Transportadoras">
+    <AppLayout title="Motoristas">
     <div>
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-4">
-                    <h1 class="text-2xl font-bold mb-4">Transportadoras</h1>
+                    <h1 class="text-2xl font-bold mb-4">Motoristas</h1>
 
                     <!-- Create Button -->
                     <button class="bg-blue-500 text-white px-4 py-2 rounded mb-4" @click="showCreateModal">
@@ -25,24 +25,20 @@ import axios from 'axios';
                         <thead>
                             <tr class="w-full bg-gray-200 text-left">
                                 <th class="py-2 px-4">Nome</th>
-                                <th class="py-2 px-4">CNPJ</th>
-                                <th class="py-2 px-4">CEP</th>
-                                <th class="py-2 px-4">Endereço</th>
+                                <th class="py-2 px-4">CNH</th>
                                 <th class="py-2 px-4">Ações</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="item in carriersData" :key="item.id" class="border-b">
+                            <tr v-for="item in driversData" :key="item.id" class="border-b">
                                 <td class="py-2 px-4">{{ item.name }}</td>
-                                <td class="py-2 px-4">{{ item.cnpj }}</td>
-                                <td class="py-2 px-4">{{ item.cep }}</td>
-                                <td class="py-2 px-4">{{ item.address }}</td>
+                                <td class="py-2 px-4">{{ item.cnh }}</td>
                                 <td class="py-2 px-4">
                                     <button @click="openEditModal(item)" class="text-blue-500 mr-2">Editar</button>
                                     <button @click="deleteEntry(item.id)" class="text-red-500">Excluir</button>
                                 </td>
                             </tr>
-                            <tr v-if="!carriersData.length">
+                            <tr v-if="!driversData.length">
                                 <td colspan="5" class="py-4 text-center text-gray-500">Nenhum dado disponível</td>
                             </tr>
                         </tbody>
@@ -70,39 +66,16 @@ import axios from 'axios';
                             <InputError v-if="errors?.name" :message="errors.name[0]" class="mt-2" />
                         </div>
                         <div class="mb-4">
-                            <InputLabel for="cnpj" value="CNPJ" />
+                            <InputLabel for="cnh" value="CNH" />
                             <TextInput
-                                id="cnpj"
-                                v-model="newEntry.cnpj"
+                                id="cnh"
+                                v-model="newEntry.cnh"
                                 type="text"
-                                v-mask="'##.###.###/####-##'"
+                                v-mask="'### ### ### ##'"
                                 class="mt-1 block w-full"
                                 required
                             />
-                            <InputError v-if="errors?.cnpj" :message="errors.cnpj[0]" class="mt-2" />
-                        </div>
-                        <div class="mb-4">
-                            <InputLabel for="cep" value="CEP" />
-                            <TextInput
-                                id="cep"
-                                v-model="newEntry.cep"
-                                type="text"
-                                v-mask="'#####-###'"
-                                class="mt-1 block w-full"
-                                required
-                            />
-                            <InputError v-if="errors?.cep" :message="errors.cep[0]" class="mt-2" />
-                        </div>
-                        <div class="mb-4">
-                            <InputLabel for="address" value="Endereço" />
-                            <TextInput
-                                id="address"
-                                v-model="newEntry.address"
-                                type="text"
-                                class="mt-1 block w-full"
-                                required
-                            />
-                            <InputError v-if="errors?.address" :message="errors.address[0]" class="mt-2" />
+                            <InputError v-if="errors?.cnh" :message="errors.cnh[0]" class="mt-2" />
                         </div>
                         <div class="flex justify-end">
                             <button type="button" @click="closeCreateModal" class="mr-2 text-gray-500">Cancelar</button>
@@ -133,39 +106,16 @@ import axios from 'axios';
                             <InputError v-if="errors?.name" :message="errors.name[0]" class="mt-2" />
                         </div>
                         <div class="mb-4">
-                            <InputLabel for="cnpj" value="CNPJ" />
+                            <InputLabel for="cnh" value="CNH" />
                             <TextInput
-                                id="cnpj"
-                                v-model="selectedEntry.cnpj"
+                                id="cnh"
+                                v-model="selectedEntry.cnh"
                                 type="text"
-                                v-mask="'##.###.###/####-##'"
+                                v-mask="'### ### ### ##'"
                                 class="mt-1 block w-full"
                                 required
                             />
-                            <InputError v-if="errors?.cnpj" :message="errors.cnpj[0]" class="mt-2" />
-                        </div>
-                        <div class="mb-4">
-                            <InputLabel for="cep" value="CEP" />
-                            <TextInput
-                                id="cep"
-                                v-model="selectedEntry.cep"
-                                type="text"
-                                v-mask="'#####-###'"
-                                class="mt-1 block w-full"
-                                required
-                            />
-                            <InputError v-if="errors?.cep" :message="errors.cep[0]" class="mt-2" />
-                        </div>
-                        <div class="mb-4">
-                            <InputLabel for="address" value="Endereço" />
-                            <TextInput
-                                id="address"
-                                v-model="selectedEntry.address"
-                                type="text"
-                                class="mt-1 block w-full"
-                                required
-                            />
-                            <InputError v-if="errors?.address" :message="errors.address[0]" class="mt-2" />
+                            <InputError v-if="errors?.cnh" :message="errors.cnh[0]" class="mt-2" />
                         </div>
                         <div class="flex justify-end">
                             <button type="button" @click="closeEditModal" class="mr-2 text-gray-500">Cancelar</button>
@@ -183,22 +133,22 @@ import axios from 'axios';
 <script>
 export default {
     props:{
-        carriers: Array,
+        drivers: Array,
     },
     components: { Modal },
     data() {
         return {
             createModalVisible: false,
-            carriersData: [],
+            driversData: [],
             editModalVisible: false,
-            newEntry: { name: '', cnpj: '', cep: '', address: '' },
+            newEntry: { name: '', cnh: '' },
             selectedEntry: null,
             tableData: [],
             errors: {}
         };
     },
     mounted(){
-        this.carriersData = this.carriers;
+        this.driversData = this.drivers;
     },
     methods: {
         showCreateModal() {
@@ -206,12 +156,12 @@ export default {
         },
         closeCreateModal() {
             this.createModalVisible = false;
-            this.newEntry = { name: '', cnpj: '', cep: '', address: '' };
+            this.newEntry = { name: '', cnh: '' };
         },
         createEntry() {
-            axios.post(route('carrier.store'), this.newEntry)
+            axios.post(route('driver.store'), this.newEntry)
             .then(response => {
-                this.carriersData = response.data;
+                this.driversData = response.data;
                 this.closeCreateModal();
             })
             .catch(error => {
@@ -230,9 +180,9 @@ export default {
             this.selectedEntry = null;
         },
         updateEntry() {
-            axios.post(route('carrier.store'), this.selectedEntry)
+            axios.post(route('driver.store'), this.selectedEntry)
             .then(response => {
-                this.carriersData = response.data;
+                this.driversData = response.data;
             })
             .catch(error => {
                 console.log(error);
@@ -244,9 +194,9 @@ export default {
             this.closeEditModal();
         },
         deleteEntry(id) {
-            axios.delete(route('carrier.destroy', id))
+            axios.delete(route('driver.destroy', id))
             .then(response => {
-                this.carriersData = response.data;
+                this.driversData = response.data;
             })
             .catch(error => {
                 console.log(error);

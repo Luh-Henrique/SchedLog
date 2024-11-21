@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Driver;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
 
 class DriverController extends Controller
 {
@@ -12,7 +14,11 @@ class DriverController extends Controller
      */
     public function index()
     {
-        //
+        $drivers = Driver::get();
+
+        return Inertia::render('Driver/Index', [
+            'drivers' => $drivers
+        ]);
     }
 
     /**
@@ -28,6 +34,36 @@ class DriverController extends Controller
      */
     public function store(Request $request)
     {
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'cnh' => 'required|regex:/^\d{3}\s?\d{3}\s?\d{3}\s?\d{2}$/',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $requestAll = $request->all();
+
+        $requestAll['id'] = $request->get('id', null);
+
+        Driver::updateOrCreate(
+            [
+                'id' => $requestAll['id']
+            ],
+            [
+                'name' => $requestAll['name'],
+                'cnh' => $requestAll['cnh'],
+            ]
+        );
+
+        $drivers = Driver::get();
+
+        return response()->json($drivers, 200);
         //
     }
 
@@ -60,6 +96,10 @@ class DriverController extends Controller
      */
     public function destroy(Driver $driver)
     {
-        //
+        $driver->delete();
+
+        $drivers = Driver::get();
+
+        return response()->json($drivers, 200);
     }
 }

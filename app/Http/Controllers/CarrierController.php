@@ -51,7 +51,7 @@ class CarrierController extends Controller
 
         $requestAll = $request->all();
 
-        $requestAll['id'] = $request->get('id');
+        $requestAll['id'] = $request->get('id', null);
 
         Carrier::updateOrCreate(
             [

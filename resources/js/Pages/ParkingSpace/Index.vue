@@ -5,15 +5,16 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import TextInput from '@/Components/TextInput.vue';
 import axios from 'axios';
+import "vue-select/dist/vue-select.css";
 </script>
 
 <template>
-    <AppLayout title="Transportadoras">
+    <AppLayout title="Vaga">
     <div>
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-4">
-                    <h1 class="text-2xl font-bold mb-4">Transportadoras</h1>
+                    <h1 class="text-2xl font-bold mb-4">Vaga</h1>
 
                     <!-- Create Button -->
                     <button class="bg-blue-500 text-white px-4 py-2 rounded mb-4" @click="showCreateModal">
@@ -24,25 +25,23 @@ import axios from 'axios';
                     <table class="min-w-full bg-white">
                         <thead>
                             <tr class="w-full bg-gray-200 text-left">
-                                <th class="py-2 px-4">Nome</th>
-                                <th class="py-2 px-4">CNPJ</th>
-                                <th class="py-2 px-4">CEP</th>
-                                <th class="py-2 px-4">Endereço</th>
+                                <th class="py-2 px-4">Descrição</th>
+                                <th class="py-2 px-4">Local</th>
+                                <th class="py-2 px-4">Tipos de Veículo</th>
                                 <th class="py-2 px-4">Ações</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="item in carriersData" :key="item.id" class="border-b">
-                                <td class="py-2 px-4">{{ item.name }}</td>
-                                <td class="py-2 px-4">{{ item.cnpj }}</td>
-                                <td class="py-2 px-4">{{ item.cep }}</td>
-                                <td class="py-2 px-4">{{ item.address }}</td>
+                            <tr v-for="item in parkingSpaceData" :key="item.id" class="border-b">
+                                <td class="py-2 px-4">{{ item.desc }}</td>
+                                <td class="py-2 px-4">{{ item.local?.name }}</td>
+                                <td class="py-2 px-4">{{ item.vehicleTypes.map(el => el.desc).join(', ') }}</td>
                                 <td class="py-2 px-4">
                                     <button @click="openEditModal(item)" class="text-blue-500 mr-2">Editar</button>
                                     <button @click="deleteEntry(item.id)" class="text-red-500">Excluir</button>
                                 </td>
                             </tr>
-                            <tr v-if="!carriersData.length">
+                            <tr v-if="!parkingSpaceData.length">
                                 <td colspan="5" class="py-4 text-center text-gray-500">Nenhum dado disponível</td>
                             </tr>
                         </tbody>
@@ -58,51 +57,30 @@ import axios from 'axios';
                     <h2 class="text-xl">Criar Entrada</h2>
                     <form @submit.prevent="createEntry">
                         <div class="mb-4">
-                            <InputLabel for="name" value="Nome" />
+                            <InputLabel for="desc" value="Descrição" />
                             <TextInput
-                                id="name"
-                                v-model="newEntry.name"
+                                id="desc"
+                                v-model="newEntry.desc"
                                 type="text"
                                 class="mt-1 block w-full"
                                 required
                                 autofocus
                             />
-                            <InputError v-if="errors?.name" :message="errors.name[0]" class="mt-2" />
+                            <InputError v-if="errors?.desc" :message="errors.desc[0]" class="mt-2" />
                         </div>
                         <div class="mb-4">
-                            <InputLabel for="cnpj" value="CNPJ" />
-                            <TextInput
-                                id="cnpj"
-                                v-model="newEntry.cnpj"
-                                type="text"
-                                v-mask="'##.###.###/####-##'"
-                                class="mt-1 block w-full"
-                                required
-                            />
-                            <InputError v-if="errors?.cnpj" :message="errors.cnpj[0]" class="mt-2" />
+                            <InputLabel for="local_id" value="Local" />
+                            <select v-model="newEntry.local_id" class="border rounded p-2 w-full">
+                                <option v-for="local in locals" :key="local.id" :value="local.id">
+                                    {{ local.name }}
+                                </option>
+                            </select>
+                            <InputError v-if="errors?.local_id" :message="errors.local_id[0]" class="mt-2" />
                         </div>
                         <div class="mb-4">
-                            <InputLabel for="cep" value="CEP" />
-                            <TextInput
-                                id="cep"
-                                v-model="newEntry.cep"
-                                type="text"
-                                v-mask="'#####-###'"
-                                class="mt-1 block w-full"
-                                required
-                            />
-                            <InputError v-if="errors?.cep" :message="errors.cep[0]" class="mt-2" />
-                        </div>
-                        <div class="mb-4">
-                            <InputLabel for="address" value="Endereço" />
-                            <TextInput
-                                id="address"
-                                v-model="newEntry.address"
-                                type="text"
-                                class="mt-1 block w-full"
-                                required
-                            />
-                            <InputError v-if="errors?.address" :message="errors.address[0]" class="mt-2" />
+                            <InputLabel for="vehicle_types" value="Tipos de Veículo" />
+                            <v-select label="desc" v-model="newEntry.vehicle_types" multiple :reduce="item => item.id" :options="vehicleTypes" />
+                            <InputError v-if="errors?.vehicle_types" :message="errors.vehicle_types[0]" class="mt-2" />
                         </div>
                         <div class="flex justify-end">
                             <button type="button" @click="closeCreateModal" class="mr-2 text-gray-500">Cancelar</button>
@@ -121,51 +99,30 @@ import axios from 'axios';
                     <h2 class="text-xl">Editar Entrada</h2>
                     <form @submit.prevent="updateEntry">
                         <div class="mb-4">
-                            <InputLabel for="name" value="Nome" />
+                            <InputLabel for="desc" value="Descrição" />
                             <TextInput
-                                id="name"
-                                v-model="selectedEntry.name"
+                                id="desc"
+                                v-model="selectedEntry.desc"
                                 type="text"
                                 class="mt-1 block w-full"
                                 required
                                 autofocus
                             />
-                            <InputError v-if="errors?.name" :message="errors.name[0]" class="mt-2" />
+                            <InputError v-if="errors?.desc" :message="errors.desc[0]" class="mt-2" />
                         </div>
                         <div class="mb-4">
-                            <InputLabel for="cnpj" value="CNPJ" />
-                            <TextInput
-                                id="cnpj"
-                                v-model="selectedEntry.cnpj"
-                                type="text"
-                                v-mask="'##.###.###/####-##'"
-                                class="mt-1 block w-full"
-                                required
-                            />
-                            <InputError v-if="errors?.cnpj" :message="errors.cnpj[0]" class="mt-2" />
+                            <InputLabel for="local_id" value="Local" />
+                            <select v-model="selectedEntry.local_id" class="border rounded p-2 w-full">
+                                <option v-for="local in locals" :key="local.id" :value="local.id">
+                                    {{ local.name }}
+                                </option>
+                            </select>
+                            <InputError v-if="errors?.local_id" :message="errors.local_id[0]" class="mt-2" />
                         </div>
                         <div class="mb-4">
-                            <InputLabel for="cep" value="CEP" />
-                            <TextInput
-                                id="cep"
-                                v-model="selectedEntry.cep"
-                                type="text"
-                                v-mask="'#####-###'"
-                                class="mt-1 block w-full"
-                                required
-                            />
-                            <InputError v-if="errors?.cep" :message="errors.cep[0]" class="mt-2" />
-                        </div>
-                        <div class="mb-4">
-                            <InputLabel for="address" value="Endereço" />
-                            <TextInput
-                                id="address"
-                                v-model="selectedEntry.address"
-                                type="text"
-                                class="mt-1 block w-full"
-                                required
-                            />
-                            <InputError v-if="errors?.address" :message="errors.address[0]" class="mt-2" />
+                            <InputLabel for="vehicleTypes" value="Tipos de Veículo" />
+                            <v-select label="desc" v-model="selectedEntry.vehicle_types" multiple :reduce="item => item.id" :options="vehicleTypes" />
+                            <InputError v-if="errors?.vehicleTypes" :message="errors.vehicleTypes[0]" class="mt-2" />
                         </div>
                         <div class="flex justify-end">
                             <button type="button" @click="closeEditModal" class="mr-2 text-gray-500">Cancelar</button>
@@ -183,22 +140,24 @@ import axios from 'axios';
 <script>
 export default {
     props:{
-        carriers: Array,
+        parkingSpaces: Array,
+        locals: Array,
+        vehicleTypes:Array,
     },
     components: { Modal },
     data() {
         return {
             createModalVisible: false,
-            carriersData: [],
+            parkingSpaceData: [],
             editModalVisible: false,
-            newEntry: { name: '', cnpj: '', cep: '', address: '' },
+            newEntry: { desc: '', local_id: '', vehicleTypes: [], address: '' },
             selectedEntry: null,
             tableData: [],
             errors: {}
         };
     },
     mounted(){
-        this.carriersData = this.carriers;
+        this.parkingSpaceData = this.parkingSpaces;
     },
     methods: {
         showCreateModal() {
@@ -206,12 +165,12 @@ export default {
         },
         closeCreateModal() {
             this.createModalVisible = false;
-            this.newEntry = { name: '', cnpj: '', cep: '', address: '' };
+            this.newEntry = { desc: '', local_id: '', vehicleTypes: [], address: '' };
         },
         createEntry() {
-            axios.post(route('carrier.store'), this.newEntry)
+            axios.post(route('parkingSpace.store'), this.newEntry)
             .then(response => {
-                this.carriersData = response.data;
+                this.parkingSpaceData = response.data;
                 this.closeCreateModal();
             })
             .catch(error => {
@@ -230,9 +189,9 @@ export default {
             this.selectedEntry = null;
         },
         updateEntry() {
-            axios.post(route('carrier.store'), this.selectedEntry)
+            axios.post(route('parkingSpace.store'), this.selectedEntry)
             .then(response => {
-                this.carriersData = response.data;
+                this.parkingSpaceData = response.data;
             })
             .catch(error => {
                 console.log(error);
@@ -244,9 +203,9 @@ export default {
             this.closeEditModal();
         },
         deleteEntry(id) {
-            axios.delete(route('carrier.destroy', id))
+            axios.delete(route('parkingSpace.destroy', id))
             .then(response => {
-                this.carriersData = response.data;
+                this.parkingSpaceData = response.data;
             })
             .catch(error => {
                 console.log(error);

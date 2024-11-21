@@ -12,7 +12,6 @@ class Stage extends Model
     const CANCELED = 99;
 
     protected $fillable = [
-        'id',
         'desc',
         'code',
         'position'

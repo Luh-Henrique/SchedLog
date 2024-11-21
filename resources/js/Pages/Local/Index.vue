@@ -8,12 +8,12 @@ import axios from 'axios';
 </script>
 
 <template>
-    <AppLayout title="Transportadoras">
+    <AppLayout title="Local">
     <div>
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-4">
-                    <h1 class="text-2xl font-bold mb-4">Transportadoras</h1>
+                    <h1 class="text-2xl font-bold mb-4">Local</h1>
 
                     <!-- Create Button -->
                     <button class="bg-blue-500 text-white px-4 py-2 rounded mb-4" @click="showCreateModal">
@@ -25,16 +25,14 @@ import axios from 'axios';
                         <thead>
                             <tr class="w-full bg-gray-200 text-left">
                                 <th class="py-2 px-4">Nome</th>
-                                <th class="py-2 px-4">CNPJ</th>
                                 <th class="py-2 px-4">CEP</th>
                                 <th class="py-2 px-4">Endereço</th>
                                 <th class="py-2 px-4">Ações</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="item in carriersData" :key="item.id" class="border-b">
+                            <tr v-for="item in localsData" :key="item.id" class="border-b">
                                 <td class="py-2 px-4">{{ item.name }}</td>
-                                <td class="py-2 px-4">{{ item.cnpj }}</td>
                                 <td class="py-2 px-4">{{ item.cep }}</td>
                                 <td class="py-2 px-4">{{ item.address }}</td>
                                 <td class="py-2 px-4">
@@ -42,7 +40,7 @@ import axios from 'axios';
                                     <button @click="deleteEntry(item.id)" class="text-red-500">Excluir</button>
                                 </td>
                             </tr>
-                            <tr v-if="!carriersData.length">
+                            <tr v-if="!localsData.length">
                                 <td colspan="5" class="py-4 text-center text-gray-500">Nenhum dado disponível</td>
                             </tr>
                         </tbody>
@@ -68,18 +66,6 @@ import axios from 'axios';
                                 autofocus
                             />
                             <InputError v-if="errors?.name" :message="errors.name[0]" class="mt-2" />
-                        </div>
-                        <div class="mb-4">
-                            <InputLabel for="cnpj" value="CNPJ" />
-                            <TextInput
-                                id="cnpj"
-                                v-model="newEntry.cnpj"
-                                type="text"
-                                v-mask="'##.###.###/####-##'"
-                                class="mt-1 block w-full"
-                                required
-                            />
-                            <InputError v-if="errors?.cnpj" :message="errors.cnpj[0]" class="mt-2" />
                         </div>
                         <div class="mb-4">
                             <InputLabel for="cep" value="CEP" />
@@ -133,18 +119,6 @@ import axios from 'axios';
                             <InputError v-if="errors?.name" :message="errors.name[0]" class="mt-2" />
                         </div>
                         <div class="mb-4">
-                            <InputLabel for="cnpj" value="CNPJ" />
-                            <TextInput
-                                id="cnpj"
-                                v-model="selectedEntry.cnpj"
-                                type="text"
-                                v-mask="'##.###.###/####-##'"
-                                class="mt-1 block w-full"
-                                required
-                            />
-                            <InputError v-if="errors?.cnpj" :message="errors.cnpj[0]" class="mt-2" />
-                        </div>
-                        <div class="mb-4">
                             <InputLabel for="cep" value="CEP" />
                             <TextInput
                                 id="cep"
@@ -183,22 +157,22 @@ import axios from 'axios';
 <script>
 export default {
     props:{
-        carriers: Array,
+        locals: Array,
     },
     components: { Modal },
     data() {
         return {
             createModalVisible: false,
-            carriersData: [],
+            localsData: [],
             editModalVisible: false,
-            newEntry: { name: '', cnpj: '', cep: '', address: '' },
+            newEntry: { name: '', cep: '', address: '' },
             selectedEntry: null,
             tableData: [],
             errors: {}
         };
     },
     mounted(){
-        this.carriersData = this.carriers;
+        this.localsData = this.locals;
     },
     methods: {
         showCreateModal() {
@@ -209,9 +183,9 @@ export default {
             this.newEntry = { name: '', cnpj: '', cep: '', address: '' };
         },
         createEntry() {
-            axios.post(route('carrier.store'), this.newEntry)
+            axios.post(route('local.store'), this.newEntry)
             .then(response => {
-                this.carriersData = response.data;
+                this.localsData = response.data;
                 this.closeCreateModal();
             })
             .catch(error => {
@@ -230,9 +204,9 @@ export default {
             this.selectedEntry = null;
         },
         updateEntry() {
-            axios.post(route('carrier.store'), this.selectedEntry)
+            axios.post(route('local.store'), this.selectedEntry)
             .then(response => {
-                this.carriersData = response.data;
+                this.localsData = response.data;
             })
             .catch(error => {
                 console.log(error);
@@ -244,9 +218,9 @@ export default {
             this.closeEditModal();
         },
         deleteEntry(id) {
-            axios.delete(route('carrier.destroy', id))
+            axios.delete(route('local.destroy', id))
             .then(response => {
-                this.carriersData = response.data;
+                this.localsData = response.data;
             })
             .catch(error => {
                 console.log(error);

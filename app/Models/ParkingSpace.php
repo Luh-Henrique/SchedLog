@@ -10,7 +10,6 @@ class ParkingSpace extends Model
     use HasFactory;
 
     protected $fillable = [
-        'id',
         'desc',
         'local_id',
         'vehicle_types'
@@ -18,5 +17,14 @@ class ParkingSpace extends Model
 
     protected $casts = [
         'vehicle_types' => 'array'
-    ]
+    ];
+
+    public function getRelatedVehicleTypesAttribute()
+    {
+        return VehicleType::whereIn('id', $this->vehicle_types ?? [])->get();
+    }
+
+    public function local(){
+        return $this->belongsTo(Local::class, 'local_id', 'id');
+    }
 }
