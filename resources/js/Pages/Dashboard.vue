@@ -14,7 +14,7 @@ import AppLayout from '@/Layouts/AppLayout.vue';
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
                     <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg h-screen flex flex-col">
-                        <div class="container mx-auto p-4 flex-grow flex flex-col relative">
+                        <div class="container mx-auto p-4 flex-grow flex flex-col relative h-full">
                             <h1 class="text-2xl font-bold mb-4">Agendamentos</h1>
 
                             <!-- Create Booking Button -->
@@ -23,21 +23,36 @@ import AppLayout from '@/Layouts/AppLayout.vue';
                                 Criar agendamento
                             </button>
 
-                            <div class="flex flex-row justify-between flex-grow">
-                                <div class="containerStage content min-w-[20%] max-w-[20%] mx-1 px-1 bg-gray-100 rounded overflow-auto hover-overflow flex flex-col"
-                                    v-for="stage in stages" :key="stage.id">
-                                    <div class="text-center my-2 font-semibold">{{ stage.desc }} ({{ bookings.filter(b => b.stage_id === stage.id).length }})</div>
-                                    <div class="flex-grow">
-                                        <div v-for="booking in bookings.filter(b => b.stage_id === stage.id)"
-                                            :key="booking.id" class="border p-2 mb-2 rounded bg-white shadow">
-                                            <p>{{ booking.booking_dt }}</p>
-                                            <button @click="openModal(booking)" class="text-blue-500">Avançar</button>
+                            <div class="flex flex-row justify-between overflow-x-auto flex-nowrap h-screen">
+                                <!-- Stage Columns -->
+                                <div
+                                    class="containerStage min-w-[20%] max-w-[20%] mx-1 px-1 bg-gray-100 rounded flex flex-col overflow-hidden"
+                                    v-for="stage in stages"
+                                    :key="stage.id">
+                                    <div class="text-center my-2 font-semibold">
+                                        {{ stage.desc }} ({{ bookings.filter(b => b.stage_id === stage.id).length }})
+                                    </div>
+                                    <div class="flex-grow overflow-y-auto max-h-[calc(100vh-64px)]">
+                                        <div
+                                            v-for="booking in bookings.filter(b => b.stage_id === stage.id)"
+                                            @click="showBookingModal(booking)"
+                                            :key="booking.id"
+                                            class="border p-2 mb-2 rounded bg-white shadow cursor-pointer">
+                                            <p><strong>Placa:</strong> {{ booking.vehicle?.placa ?? 'Sem Placa' }}</p>
+                                            <p><strong>Transportadora:</strong> {{ booking.carrier?.name ?? 'Sem Transportadora' }}</p>
+                                            <!-- <button @click="openModal(booking)" class="text-blue-500">Avançar</button> -->
                                         </div>
-                                        <p v-if="!bookings.filter(b => b.stage_id === stage.id).length"
-                                            class="text-gray-500 text-center">Nenhum agendamento</p>
+                                        <p
+                                            v-if="!bookings.filter(b => b.stage_id === stage.id).length"
+                                            class="text-gray-500 text-center">
+                                            Nenhum agendamento
+                                        </p>
                                     </div>
                                 </div>
                             </div>
+
+
+
 
                             <!-- Create Booking Modal -->
                             <Modal class="h-full" :show="createModalVisible" @close="closeCreateModal">
@@ -111,6 +126,78 @@ import AppLayout from '@/Layouts/AppLayout.vue';
                                     </div>
                                 </template>
                             </Modal>
+
+                            <Modal :show="bookingModalVisible" @close="closeBookingModal">
+    <template v-slot>
+      <!-- Modal Container -->
+      <div class="relative w-full max-w-4xl mx-auto bg-white rounded-lg shadow-xl p-6 space-y-6">
+
+        <!-- Burger Menu in Top Left -->
+        <div class="absolute top-4 left-4">
+          <div class="relative">
+            <!-- Burger Button -->
+            <button @click="toggleMenu" class="text-gray-600 hover:text-gray-800">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M3 5h14a1 1 0 110 2H3a1 1 0 110-2zm0 4h14a1 1 0 110 2H3a1 1 0 110-2zm0 4h14a1 1 0 110 2H3a1 1 0 110-2z" clip-rule="evenodd" />
+              </svg>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div
+              v-if="menuOpen"
+              class="absolute top-8 left-0 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10"
+            >
+              <ul>
+                <li>
+                  <button
+                    @click="cancelBooking"
+                    class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                  >
+                    Cancelar
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Title -->
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-semibold text-gray-800">Detalhes do Agendamento</h2>
+          <button @click="closeBookingModal" class="text-gray-500 hover:text-gray-700">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M6.293 4.293a1 1 0 011.414 0L10 6.586l2.293-2.293a1 1 0 111.414 1.414L11.414 8l2.293 2.293a1 1 0 11-1.414 1.414L10 9.414l-2.293 2.293a1 1 0 11-1.414-1.414L8.586 8 6.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Booking Information -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <p class="text-sm text-gray-500"><strong>Placa:</strong> <span class="font-medium text-gray-700">{{ selectedBooking?.vehicle?.placa ?? 'Sem Placa' }}</span></p>
+            <p class="text-sm text-gray-500"><strong>Transportadora:</strong> <span class="font-medium text-gray-700">{{ selectedBooking?.carrier?.name ?? 'Sem Transportadora' }}</span></p>
+            <p class="text-sm text-gray-500"><strong>Tipo de Veículo:</strong> <span class="font-medium text-gray-700">{{ selectedBooking?.vehicle_type?.desc ?? 'Não especificado' }}</span></p>
+          </div>
+
+          <div>
+            <p class="text-sm text-gray-500"><strong>Motorista:</strong> <span class="font-medium text-gray-700">{{ selectedBooking?.driver?.name ?? 'Não especificado' }}</span></p>
+            <p class="text-sm text-gray-500"><strong>Data do Agendamento:</strong> <span class="font-medium text-gray-700">{{ selectedBooking?.booking_dt ?? 'Data não especificada' }}</span></p>
+            <p class="text-sm text-gray-500"><strong>Vaga:</strong> <span class="font-medium text-gray-700">{{ selectedBooking?.parking_space?.desc ?? 'Não especificado' }}</span></p>
+          </div>
+        </div>
+
+        <!-- Footer Buttons -->
+        <div class="flex justify-end mt-6">
+          <button v-if="!['99'].includes(selectedBooking.stage?.code)" @click="openAdvanceModal" class="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+            Avançar
+          </button>
+        </div>
+      </div>
+    </template>
+  </Modal>
+
+
+
                         </div>
                     </div>
                 </div>
@@ -134,8 +221,10 @@ export default {
     components: { Modal },
     data() {
         return {
+            menuOpen: false,
             createModalVisible: false,
             advanceModalVisible: false,
+            bookingModalVisible: false,
             newBooking: {
                 booking_dt: moment().add(1, 'day'),
                 stage_id: null,
@@ -163,6 +252,24 @@ export default {
         this.getData();
     },
     methods: {
+        toggleMenu() {
+            this.menuOpen = !this.menuOpen; // Toggle menu visibility
+        },
+        cancelBooking() {
+            axios.post(route('booking.cancel', this.selectedBooking.id))
+            .then(response => {
+                this.bookings = response.data;
+                this.closeBookingModal();
+                this.closeAdvanceModal();
+            })
+            .catch(error => {
+                this.closeBookingModal();
+                this.closeAdvanceModal();
+                window.Toast.error('Erro ao cancelar agendamento!');
+            });
+            this.selectedBooking = null;
+            this.closeBookingModal();
+        },
         plateMask() {
             if (/^[A-Za-z]{3}\d{1}[A-Za-z]{1}\d{2}$/.test(this.newBooking.placa)) {
                 return "AAA#A##";
@@ -180,25 +287,34 @@ export default {
                 console.log(error);
             });
         },
-        showCreateModal() {
+        showCreateModal(booking) {
+            this.selectedBooking = booking;
             this.createModalVisible = true;
         },
         closeCreateModal() {
-            // this.createModalVisible = false;
-            // this.newBooking = {
-            //     booking_dt: moment().add(1, 'day'),
-            //     stage_id: null,
-            //     parking_space_id: null,
-            //     vehicle_type_id: null,
-            //     vehicle: {
-            //         placa: null,
-            //     }
-            // };
+            this.createModalVisible = false;
+            this.selectedBooking = null;
+        },
+        showBookingModal(booking) {
+            this.selectedBooking = booking;
+            this.bookingModalVisible = true;
+        },
+        closeBookingModal() {
+            this.bookingModalVisible = false;
+            this.newBooking = {
+                booking_dt: moment().add(1, 'day'),
+                stage_id: null,
+                parking_space_id: null,
+                vehicle_type_id: null,
+                vehicle: {
+                    placa: null,
+                }
+            };
         },
         createBooking() {
             axios.post(route('booking.store'), this.newBooking)
             .then(response => {
-                console.log(response.data);
+                this.bookings = response.data;
             })
             .catch(error => {
                 console.log(error);
@@ -206,18 +322,27 @@ export default {
             // this.bookings.push({ ...this.newBooking, id: Date.now() }); // Mock ID generation
             this.closeCreateModal();
         },
-        openModal(booking) {
-            this.selectedBooking = booking;
-            this.advanceModalVisible = true;
-        },
         closeAdvanceModal() {
             this.advanceModalVisible = false;
             this.selectedBooking = null;
         },
+        openAdvanceModal() {
+            this.advanceModalVisible = true;
+            toast.success('test');
+        },
         advanceBooking() {
             if (this.selectedBooking) {
-                this.selectedBooking.stage_id += 1; // Move to the next stage
-                this.closeAdvanceModal();
+                axios.post(route('booking.nextStage', this.selectedBooking.id))
+                .then(response => {
+                    this.bookings = response.data;
+                    this.closeBookingModal();
+                    this.closeAdvanceModal();
+                })
+                .catch(error => {
+                    this.closeBookingModal();
+                    this.closeAdvanceModal();
+                    window.Toast.error('Erro ao avançar agendamento ou estágio final alcançado!');
+                });
             }
         },
     },

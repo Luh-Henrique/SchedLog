@@ -38,7 +38,7 @@ class BookingController extends Controller
             'placa' => 'required|regex:/^[A-Z]{3}\d{1}[A-Z\d]{1}\d{2}$/',
             'carrier_id'=> 'exists:carriers,id',
             'user_id'=> 'exists:users,id',
-            'parking_space_id' => 'exists:parking_spaces,id'
+            'parking_space_id' => 'nullable|exists:parking_spaces,id'
         ]);
 
         if ($validator->fails()) {
@@ -76,7 +76,7 @@ class BookingController extends Controller
             ]
         );
 
-        $bookings = Booking::get();
+        $bookings = Booking::with('vehicle', 'stage', 'carrier', 'parkingSpace')->get();
 
         return response()->json($bookings, 200);
     }
@@ -113,7 +113,7 @@ class BookingController extends Controller
         //
     }
 
-    public function nextStage($booking){
+    public function nextStage(Booking $booking){
         $stage = $booking->getNextStage();
         if($stage){
             $booking->update([
@@ -126,7 +126,9 @@ class BookingController extends Controller
             $message = 'Erro ao Avançar'; $stts = 500;
         }
 
-        return response()->json(['message' => $message, 'stts' => $stts]);
+        $bookings = Booking::with('vehicle', 'stage', 'carrier', 'parkingSpace')->get();
+
+        return response()->json($bookings, $stts);
     }
 
     public function previousStage(Booking $booking){
@@ -142,7 +144,9 @@ class BookingController extends Controller
             $message = 'Erro ao Retroceder'; $stts = 500;
         }
 
-        return response()->json(['message' => $message, 'stts' => $stts]);
+        $bookings = Booking::with('vehicle', 'stage', 'carrier', 'parkingSpace')->get();
+
+        return response()->json($bookings, $stts);
     }
 
     public function cancel(Booking $booking){
@@ -158,11 +162,13 @@ class BookingController extends Controller
             $message = 'Erro ao cancelar'; $stts = 500;
         }
 
-        return response()->json(['message' => $message, 'stts' => $stts]);
+        $bookings = Booking::with('vehicle', 'stage', 'carrier', 'parkingSpace')->get();
+
+        return response()->json($bookings, $stts);
     }
 
     public function getBookings(){
-        $bookings = Booking::get();
+        $bookings = Booking::with('vehicle', 'stage', 'carrier', 'parkingSpace')->get();
 
         return response()->json($bookings);
     }

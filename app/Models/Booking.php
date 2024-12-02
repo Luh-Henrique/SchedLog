@@ -40,15 +40,15 @@ class Booking extends Model
     }
 
     public function getNextStage(){
-        return Stage::where('position', ($this->stage->position_id + 1))->where('flow_id', $this->stage->flow_id)->first();
+        return Stage::where('position', ($this->stage->position + 1))->first();
     }
 
     public function getPreviousStage(){
-        return Stage::where('position', ($this->stage->position_id - 1))->where('flow_id', $this->stage->flow_id)->first();
+        return Stage::where('position', ($this->stage->position - 1))->first();
     }
 
     public function getCancelStage(){
-        return Stage::where('code', Stage::CANCELED)->where('flow_id', $this->stage->flow_id)->first();
+        return Stage::where('code', Stage::CANCELED)->first();
     }
 
 }

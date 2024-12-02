@@ -1,5 +1,6 @@
 import './bootstrap';
 import '../css/app.css';
+import '@vuepic/vue-datepicker/dist/main.css';
 
 import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
@@ -9,8 +10,9 @@ import { VueMaskDirective } from 'v-mask';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import vSelect from 'vue-select';
 
+import Vue3Toasity from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
 
-import '@vuepic/vue-datepicker/dist/main.css'
 const vMaskV2 = VueMaskDirective;
 const vMaskV3 = {
     beforeMount: vMaskV2.bind,
@@ -27,6 +29,7 @@ createInertiaApp({
         return createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(ZiggyVue)
+            .use( Vue3Toasity, {limit: 2, theme: 'colored',})
             .directive('mask', vMaskV3)
             .component('VueDatePicker', VueDatePicker)
             .component('v-select', vSelect)

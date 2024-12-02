@@ -6,6 +6,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\DriverController;
 use App\Http\Controllers\LocalController;
 use App\Http\Controllers\ParkingSpaceController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\VehicleTypeController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -21,9 +22,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::post('store', [BookingController::class, 'store'])->name('store');
 
         Route::get('getBookings', [BookingController::class, 'getBookings'])->name('getBookings');
-        Route::get('{booking}/nextStage', [BookingController::class, 'nextStage'])->name('nextStage')->where('booking', '[0-9]+');
-        Route::get('{booking}/previousStage', [BookingController::class, 'previousStage'])->name('previousStage')->where('booking', '[0-9]+');
-        Route::get('{booking}/cancel', [BookingController::class, 'cancel'])->name('cancel')->where('booking', '[0-9]+');
+        Route::post('{booking}/nextStage', [BookingController::class, 'nextStage'])->name('nextStage')->where('booking', '[0-9]+');
+        Route::post('{booking}/previousStage', [BookingController::class, 'previousStage'])->name('previousStage')->where('booking', '[0-9]+');
+        Route::post('{booking}/cancel', [BookingController::class, 'cancel'])->name('cancel')->where('booking', '[0-9]+');
     });
 
     Route::group(['prefix' => 'carrier', 'as' => 'carrier.'], function () {
@@ -60,4 +61,12 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::post('', [DriverController::class, 'store'])->name('store');
         Route::delete('{driver?}', [DriverController::class, 'destroy'])->name('destroy')->where('driver', '[0-9]+');
     });
+
+    Route::group(['prefix' => 'reports', 'as' => 'reports.'], function () {
+        Route::get('', [ReportController::class, 'index'])->name('index');
+        Route::get('bookings-by-stage', [ReportController::class, 'getBookingsByStage'])->name('getBookingsByStage');
+        Route::get('bookings-by-carrier', [ReportController::class, 'getBookingsByCarrier'])->name('getBookingsByCarrier');
+        Route::get('bookings-by-vehicle', [ReportController::class, 'getBookingsByVehicle'])->name('getBookingsByVehicle');
+    });
+
 });
